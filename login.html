@@ -1,0 +1,16 @@
+<script>
+  function handleLogin(event) {
+    event.preventDefault();
+    // สมมติว่าดึงค่า Username/Password มาเช็คแล้วถูกต้อง
+    const isSuccess = true; 
+
+    if (isSuccess) {
+      // 1. สร้าง Token จำลอง หรือบันทึกสถานะว่าล็อคอินแล้ว
+      localStorage.setItem('pkschool_token', 'user_authenticated_12345');
+      localStorage.setItem('pkschool_user', 'admin_pakang'); // เก็บชื่อผู้ใช้ไว้โชว์ได้
+      
+      // 2. เด้งกลับไปที่หน้า Portal หลัก
+      window.location.href = 'index.html'; 
+    }
+  }
+</script>
