@@ -6,7 +6,7 @@
 <title>PK School On Cloud</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.tailwindcss.com"></script>
 
@@ -21,12 +21,36 @@
   body {
     font-family: 'Sarabun', sans-serif;
     background-color: var(--bg-main);
-    background-image: 
+    background-image:
       radial-gradient(circle at 0% 0%, var(--brand-glow) 0%, transparent 40%),
       radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
     min-height: 100vh;
   }
 
+  /* ===== ภาพพื้นหลัง (ตั้งค่าได้จากหลังบ้าน) ===== */
+  #bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .35s ease, filter .35s ease;
+  }
+  .page-wrap { position: relative; z-index: 1; }
+
+  /* ===== ชื่อเว็บไล่สี แดง → น้ำเงิน → ฟ้า ===== */
+  .brand-title {
+    background: linear-gradient(90deg, #dc2626 0%, #1e3a8a 50%, #0ea5e9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    padding-bottom: .1em;
+  }
+
+  /* ===== การ์ดเมนู ===== */
   .service-card {
     background: #ffffff;
     border: 1px solid #cbd5e1;
@@ -35,7 +59,6 @@
     position: relative;
     overflow: hidden;
   }
-
   .service-card::after {
     content: "";
     position: absolute;
@@ -43,30 +66,43 @@
     background: linear-gradient(90deg, var(--brand-primary), var(--brand-secondary));
     opacity: 0.8;
   }
-
-  .service-card:hover {
+  .service-card:not(.is-disabled):hover {
     transform: translateY(-8px);
-    background: #ffffff;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     border-color: var(--brand-primary);
   }
-
-  .service-card:hover .icon-container {
+  .icon-container { transition: all .3s ease; overflow: hidden; }
+  .service-card:not(.is-disabled):hover .icon-container {
     transform: scale(1.1);
     background-color: var(--brand-primary);
     color: white;
   }
+  .icon-container.has-image { background: #fff !important; border: 1px solid #e2e8f0; }
 
-  .animate-fade-up {
-    animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* การ์ดที่ปิดใช้งานชั่วคราว: เห็นแต่กดไม่ได้ */
+  .service-card.is-disabled {
+    cursor: not-allowed;
+    background: #f8fafc;
+    border-style: dashed;
+  }
+  .service-card.is-disabled::after { background: #cbd5e1; }
+  .service-card.is-disabled .card-body { filter: grayscale(1); opacity: .55; }
+  .disabled-badge {
+    position: absolute; top: 12px; right: 12px;
+    font-size: 11px; font-weight: 600;
+    background: #fef3c7; color: #b45309;
+    padding: 3px 10px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'Kanit', sans-serif;
   }
 
+  .animate-fade-up { animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(30px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* สไตล์หน้าจอโหลด (Loading Overlay) */
+  /* ===== หน้าจอโหลด ===== */
   #loading-overlay {
     display: none;
     position: fixed;
@@ -78,143 +114,1099 @@
     justify-content: center;
     flex-direction: column;
   }
-
   .spinner {
-    width: 50px;
-    height: 50px;
+    width: 50px; height: 50px;
     border: 5px solid #e2e8f0;
     border-top: 5px solid var(--brand-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  /* ===== ปุ่มแอดมิน (มุมซ้ายล่าง แบบไม่เด่น) ===== */
+  #admin-fab {
+    position: fixed; left: 14px; bottom: 14px; z-index: 50;
+    width: 34px; height: 34px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    color: #94a3b8; font-size: 13px;
+    background: rgba(255,255,255,.35);
+    border: 1px solid rgba(148,163,184,.25);
+    opacity: .3;
+    transition: opacity .25s, background .25s, color .25s;
   }
+  #admin-fab:hover, #admin-fab:focus-visible { opacity: 1; background: #fff; color: var(--brand-primary); outline: none; }
+
+  /* ===== Modal ===== */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(15, 23, 42, .45);
+    backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .modal-backdrop.open { display: flex; animation: fadeIn .2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .panel {
+    background: #fff; border-radius: 24px; width: 100%;
+    max-height: calc(100vh - 32px);
+    display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,.25);
+  }
+  .panel-body { overflow-y: auto; flex: 1; }
+
+  .tab-btn {
+    padding: 10px 16px; border-radius: 12px; font-weight: 500; white-space: nowrap;
+    color: #64748b; font-family: 'Kanit', sans-serif; font-size: 15px;
+    transition: background .2s, color .2s;
+  }
+  .tab-btn:hover { background: #f1f5f9; }
+  .tab-btn.active { background: #eff6ff; color: var(--brand-primary); }
+
+  .field-label { display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 6px; }
+  .field-input {
+    width: 100%; border: 1px solid #cbd5e1; border-radius: 12px;
+    padding: 10px 14px; font-size: 15px; background: #fff;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .field-input:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 18px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all .2s; font-family: 'Kanit', sans-serif; }
+  .btn:disabled { opacity: .6; cursor: not-allowed; }
+  .btn-primary { background: var(--brand-primary); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+  .btn-light { background: #f1f5f9; color: #334155; }
+  .btn-light:hover:not(:disabled) { background: #e2e8f0; }
+  .btn-danger-light { background: #fef2f2; color: #dc2626; }
+  .btn-danger-light:hover { background: #fee2e2; }
+
+  /* แถวรายการเมนูหลังบ้าน */
+  .menu-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 10px 12px; border: 1px solid #e2e8f0; border-left-width: 4px; border-left-color: #22c55e;
+    border-radius: 14px; background: #fff; transition: box-shadow .2s, opacity .2s, transform .2s;
+  }
+  .menu-row + .menu-row { margin-top: 8px; }
+  .menu-row.status-disabled { border-left-color: #f59e0b; background: #fffbeb; }
+  .menu-row.status-hidden { border-left-color: #94a3b8; background: #f8fafc; }
+  .menu-row.status-hidden .row-main { opacity: .5; }
+  .menu-row.dragging { opacity: .4; }
+  .menu-row.drag-over { box-shadow: 0 0 0 2px var(--brand-primary); transform: scale(1.01); }
+  .drag-handle { cursor: grab; color: #cbd5e1; padding: 4px; }
+  .drag-handle:hover { color: #64748b; }
+  .row-icon {
+    width: 40px; height: 40px; border-radius: 10px; background: #eff6ff; color: var(--brand-primary);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;
+  }
+  .row-icon img { width: 100%; height: 100%; object-fit: contain; }
+  .icon-btn {
+    width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
+    color: #64748b; transition: background .2s, color .2s;
+  }
+  .icon-btn:hover:not(:disabled) { background: #f1f5f9; color: #0f172a; }
+  .icon-btn.danger:hover { background: #fef2f2; color: #dc2626; }
+  .icon-btn:disabled { opacity: .3; cursor: default; }
+  .status-select { border: 1px solid #e2e8f0; border-radius: 10px; padding: 6px 8px; font-size: 13px; background: #fff; }
+
+  /* ตัวเลือกไอคอน */
+  .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; max-height: 220px; overflow-y: auto; padding: 4px; }
+  .icon-choice {
+    aspect-ratio: 1; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 18px; color: #475569; transition: all .15s;
+  }
+  .icon-choice:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
+  .icon-choice.selected { background: var(--brand-primary); border-color: var(--brand-primary); color: #fff; }
+
+  .upload-box {
+    border: 2px dashed #cbd5e1; border-radius: 16px; padding: 20px; text-align: center; cursor: pointer;
+    color: #64748b; transition: border-color .2s, background .2s; display: block;
+  }
+  .upload-box:hover { border-color: var(--brand-primary); background: #f8fafc; }
+
+  /* ตัว preview พื้นหลัง */
+  .bg-preview { position: relative; aspect-ratio: 16 / 10; border-radius: 16px; overflow: hidden; background: #f1f5f9; border: 1px solid #e2e8f0; }
+  .bg-preview-layer { position: absolute; inset: 0; background-size: cover; background-position: center; }
+  .bg-preview-content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 12px; }
+  .mini-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; height: 38px; box-shadow: 0 1px 2px rgba(0,0,0,.05); border-top: 3px solid var(--brand-primary); }
+
+  input[type="range"] { width: 100%; accent-color: var(--brand-primary); }
+
+  .card-preview-wrap { pointer-events: none; max-width: 260px; margin: 0 auto; }
+
+  /* Toast */
+  #toast-area { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 8px; align-items: center; width: calc(100% - 32px); max-width: 420px; }
+  .toast { background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 12px; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,.2); animation: fadeUp .35s ease both; display: flex; gap: 8px; align-items: center; }
+  .toast.error { background: #dc2626; }
+  .toast.success { background: #16a34a; }
 </style>
 </head>
 <body class="flex items-center justify-center p-4 min-h-screen overflow-x-hidden">
 
+<div id="bg-layer"></div>
+
 <div id="loading-overlay">
-    <div class="spinner mb-4"></div>
-    <div class="text-center">
-        <p id="loading-text" class="text-slate-800 font-bold text-lg font-[Kanit]">กำลังโหลดระบบ...</p>
-        <p class="text-slate-500 text-sm">โปรดรอสักครู่</p>
-    </div>
+  <div class="spinner mb-4"></div>
+  <div class="text-center">
+    <p id="loading-text" class="text-slate-800 font-bold text-lg font-[Kanit]">กำลังโหลดระบบ...</p>
+    <p class="text-slate-500 text-sm">โปรดรอสักครู่</p>
+  </div>
 </div>
 
-<div class="max-w-6xl w-full mx-auto">
-    <div class="text-center mb-8 animate-fade-up">
-        <div class="w-16 h-16 mx-auto mb-3 p-1.5 bg-white rounded-full shadow-lg shadow-blue-500/20 flex items-center justify-center overflow-hidden">
-            <img src="school logo.jpg" alt="โลโก้โรงเรียนบ้านป่าก้าง" class="max-w-full max-h-full object-contain">
+<!-- ================= หน้าบ้าน ================= -->
+<main class="page-wrap max-w-6xl w-full mx-auto">
+  <div class="text-center mb-10 animate-fade-up">
+    <div class="w-28 h-28 md:w-36 md:h-36 mx-auto mb-4 p-2 bg-white rounded-full shadow-xl shadow-blue-500/20 ring-4 ring-white/70 flex items-center justify-center overflow-hidden">
+      <img id="site-logo" src="school logo.jpg" alt="โลโก้โรงเรียนบ้านป่าก้าง" class="max-w-full max-h-full object-contain">
+    </div>
+    <h1 id="site-title" class="brand-title text-4xl md:text-6xl font-extrabold mb-2 tracking-tight font-[Kanit]">Pa Kang School Cloud</h1>
+    <p id="site-subtitle" class="text-slate-600 text-base md:text-lg font-medium max-w-2xl mx-auto">ระบบจัดการออนไลน์ โรงเรียนบ้านป่าก้าง</p>
+  </div>
+
+  <div id="service-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-fade-up" style="animation-delay: 0.2s;"></div>
+
+  <div id="empty-state" class="text-center text-slate-400 py-16" style="display:none">
+    <i class="fa-regular fa-folder-open text-4xl mb-3"></i>
+    <p>ยังไม่มีเมนูที่เปิดใช้งาน</p>
+  </div>
+
+  <div class="text-center mt-10 pb-4 animate-fade-up opacity-50 hover:opacity-100 transition-opacity duration-300" style="animation-delay: 0.4s;">
+    <p class="text-slate-400 text-xs mb-1">ลิขสิทธิ์และพัฒนาโดย Thianrawich P. © Copyright 2026</p>
+    <p class="text-slate-400 text-[10px]">ติดต่อ ครูธนศรัณย์กร เพื่อแจ้งเหตุขัดข้องหรือข้อเสนอแนะ</p>
+  </div>
+</main>
+
+<button id="admin-fab" type="button" title="ผู้ดูแลระบบ" aria-label="ผู้ดูแลระบบ"><i class="fa-solid fa-gear"></i></button>
+
+<!-- ================= Login ================= -->
+<div id="login-modal" class="modal-backdrop">
+  <form id="login-form" class="panel max-w-sm p-7" autocomplete="off">
+    <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl"><i class="fa-solid fa-user-shield"></i></div>
+    <h2 class="text-xl font-bold text-center text-slate-800 font-[Kanit] mb-1">เข้าสู่ระบบผู้ดูแล</h2>
+    <p class="text-center text-slate-500 text-sm mb-5">กรอกรหัสผ่านเพื่อจัดการเมนูและหน้าเว็บ</p>
+    <div class="relative">
+      <input id="login-password" type="password" class="field-input pr-11" placeholder="รหัสผ่าน" required>
+      <button type="button" id="toggle-pw" class="absolute right-2 top-1/2 -translate-y-1/2 icon-btn" aria-label="แสดงรหัสผ่าน"><i class="fa-regular fa-eye"></i></button>
+    </div>
+    <p id="login-error" class="text-red-600 text-sm mt-2 min-h-[20px]"></p>
+    <div class="flex gap-2 mt-2">
+      <button type="button" class="btn btn-light flex-1" data-close="#login-modal">ยกเลิก</button>
+      <button type="submit" id="login-submit" class="btn btn-primary flex-1"><i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ</button>
+    </div>
+  </form>
+</div>
+
+<!-- ================= หลังบ้าน ================= -->
+<div id="admin-modal" class="modal-backdrop">
+  <div class="panel max-w-4xl">
+    <div class="flex items-center justify-between gap-3 px-6 pt-5 pb-3 border-b border-slate-100">
+      <div class="min-w-0">
+        <h2 class="text-xl font-bold text-slate-800 font-[Kanit] flex items-center gap-2"><i class="fa-solid fa-sliders text-blue-600"></i> จัดการหน้าเว็บ</h2>
+        <p id="mode-badge" class="text-xs text-slate-500 mt-0.5"></p>
+      </div>
+      <button type="button" class="icon-btn" id="admin-close" aria-label="ปิด"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+
+    <div class="flex gap-1 px-4 pt-3 overflow-x-auto">
+      <button class="tab-btn active" data-tab="menu"><i class="fa-solid fa-table-cells-large mr-1.5"></i>เมนูระบบ</button>
+      <button class="tab-btn" data-tab="bg"><i class="fa-regular fa-image mr-1.5"></i>พื้นหลัง</button>
+      <button class="tab-btn" data-tab="general"><i class="fa-solid fa-gear mr-1.5"></i>ตั้งค่าทั่วไป</button>
+    </div>
+
+    <div class="panel-body px-6 py-5">
+      <!-- แท็บ: เมนู -->
+      <section data-panel="menu">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <p id="menu-summary" class="text-sm text-slate-500"></p>
+          <button type="button" id="add-menu" class="btn btn-primary"><i class="fa-solid fa-plus"></i> เพิ่มเมนู</button>
         </div>
-        <h1 class="text-3xl md:text-5xl font-black text-slate-800 mb-2 tracking-tight font-[Kanit]">Pa Kang School Cloud</h1>
-        <p class="text-slate-600 text-base md:text-lg font-medium max-w-2xl mx-auto">ระบบจัดการออนไลน์ โรงเรียนบ้านป่าก้าง</p>
+        <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 mb-3 bg-slate-50 rounded-xl px-4 py-2.5">
+          <span><i class="fa-solid fa-circle text-green-500 text-[8px] mr-1"></i>แสดงปกติ</span>
+          <span><i class="fa-solid fa-circle text-amber-500 text-[8px] mr-1"></i>ปิดใช้งานชั่วคราว (เห็นแต่กดไม่ได้)</span>
+          <span><i class="fa-solid fa-circle text-slate-400 text-[8px] mr-1"></i>ซ่อน (มีในหลังบ้าน แต่หน้าเว็บไม่แสดง)</span>
+          <span class="sm:ml-auto"><i class="fa-solid fa-grip-vertical mr-1"></i>ลากเพื่อเรียงลำดับ หรือใช้ลูกศร</span>
+        </div>
+        <ul id="menu-list"></ul>
+      </section>
+
+      <!-- แท็บ: พื้นหลัง -->
+      <section data-panel="bg" style="display:none">
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="space-y-5">
+            <div>
+              <span class="field-label">ภาพพื้นหลัง</span>
+              <label class="upload-box">
+                <input type="file" id="bg-file" accept="image/*" class="hidden">
+                <i class="fa-solid fa-cloud-arrow-up text-2xl mb-1 text-blue-500"></i>
+                <div class="font-semibold text-slate-700">คลิกเพื่ออัปโหลดรูป</div>
+                <div class="text-xs">JPG / PNG — ระบบจะย่อขนาดให้อัตโนมัติ</div>
+              </label>
+              <button type="button" id="bg-remove" class="btn btn-danger-light w-full mt-2"><i class="fa-regular fa-trash-can"></i> ลบภาพพื้นหลัง</button>
+            </div>
+            <div>
+              <div class="flex justify-between"><span class="field-label">ความชัดของภาพ (Opacity)</span><span id="bg-opacity-val" class="text-sm font-semibold text-blue-600"></span></div>
+              <input type="range" id="bg-opacity" min="0" max="100" step="1">
+              <p class="text-xs text-slate-400">ค่าน้อย = ภาพจางลง ตัวหนังสืออ่านง่ายขึ้น</p>
+            </div>
+            <div>
+              <div class="flex justify-between"><span class="field-label">ความเบลอ (Blur)</span><span id="bg-blur-val" class="text-sm font-semibold text-blue-600"></span></div>
+              <input type="range" id="bg-blur" min="0" max="20" step="1">
+              <p class="text-xs text-slate-400">เบลอเพื่อให้การ์ดเมนูเด่นกว่าภาพพื้นหลัง</p>
+            </div>
+          </div>
+          <div>
+            <span class="field-label">ตัวอย่าง (Preview)</span>
+            <div class="bg-preview" id="bg-preview">
+              <div class="bg-preview-layer" id="bg-preview-layer"></div>
+              <div class="bg-preview-content">
+                <div class="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center overflow-hidden p-0.5"><img id="bg-preview-logo" alt="" class="max-w-full max-h-full object-contain"></div>
+                <div id="bg-preview-title" class="brand-title font-[Kanit] font-extrabold text-base leading-tight"></div>
+                <div class="grid grid-cols-4 gap-1.5 w-full max-w-[85%] mt-1">
+                  <div class="mini-card"></div><div class="mini-card"></div><div class="mini-card"></div><div class="mini-card"></div>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 mt-2"><i class="fa-regular fa-lightbulb mr-1"></i>ด้านหลังหน้าต่างนี้แสดงผลจริงไปพร้อมกัน กด “บันทึก” เพื่อใช้งาน</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- แท็บ: ตั้งค่าทั่วไป -->
+      <section data-panel="general" style="display:none" class="space-y-6">
+        <div class="grid md:grid-cols-2 gap-4">
+          <div><label class="field-label" for="set-title">ชื่อเว็บไซต์</label><input id="set-title" class="field-input"></div>
+          <div><label class="field-label" for="set-subtitle">คำอธิบายใต้ชื่อ</label><input id="set-subtitle" class="field-input"></div>
+        </div>
+
+        <div>
+          <span class="field-label">โลโก้โรงเรียน</span>
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="w-20 h-20 rounded-full bg-white shadow border border-slate-200 flex items-center justify-center overflow-hidden p-1"><img id="set-logo-preview" alt="" class="max-w-full max-h-full object-contain"></div>
+            <label class="btn btn-light cursor-pointer"><input type="file" id="set-logo-file" accept="image/*" class="hidden"><i class="fa-solid fa-upload"></i> อัปโหลดโลโก้ใหม่</label>
+            <button type="button" id="set-logo-reset" class="btn btn-light"><i class="fa-solid fa-rotate-left"></i> ใช้โลโก้เดิม</button>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-5">
+          <span class="field-label"><i class="fa-solid fa-key mr-1 text-slate-400"></i>เปลี่ยนรหัสผ่านผู้ดูแล</span>
+          <div class="grid sm:grid-cols-[1fr_1fr_auto] gap-2">
+            <input id="new-pw" type="password" class="field-input" placeholder="รหัสผ่านใหม่" autocomplete="new-password">
+            <input id="new-pw2" type="password" class="field-input" placeholder="ยืนยันรหัสผ่านใหม่" autocomplete="new-password">
+            <button type="button" id="change-pw" class="btn btn-light">เปลี่ยนรหัส</button>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-5">
+          <span class="field-label"><i class="fa-solid fa-box-archive mr-1 text-slate-400"></i>สำรอง / กู้คืนข้อมูล</span>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="export-json" class="btn btn-light"><i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์สำรอง</button>
+            <label class="btn btn-light cursor-pointer"><input type="file" id="import-json" accept="application/json,.json" class="hidden"><i class="fa-solid fa-file-import"></i> นำเข้าไฟล์สำรอง</label>
+            <button type="button" id="reset-all" class="btn btn-danger-light"><i class="fa-solid fa-rotate"></i> คืนค่าเริ่มต้นทั้งหมด</button>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-5">
+          <button type="button" id="logout" class="btn btn-light"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบผู้ดูแล</button>
+        </div>
+      </section>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-fade-up" style="animation-delay: 0.2s;">
-        
-        <a href="https://pkschool-cloud.github.io/Check-Student/dashboard.html" class="service-link service-card group p-6 rounded-3xl flex flex-col items-center text-center">
-            <div class="icon-container w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-inner">
-                <i class="fa-solid fa-user-check text-xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 font-[Kanit]">ระบบเช็คชื่อนักเรียน</h3>
-            <p class="text-slate-500 text-xs md:text-sm leading-relaxed mb-5">บันทึกการมาเรียน สรุปสถิติ และพิมพ์รายงาน PDF อัตโนมัติ</p>
-            <span class="mt-auto inline-flex items-center text-blue-600 font-bold text-xs md:text-sm bg-blue-50 px-5 py-2 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all">
-                เข้าใช้งาน <i class="fa-solid fa-arrow-right ml-1.5 transition-transform group-hover:translate-x-1.5"></i>
-            </span>
-        </a>
-
-        <a href="https://script.google.com/macros/s/AKfycbw71okBCdEeIUh7y90ZuRWn8Oky-1CeuF9Oz6SGY0u90XeZDC-vzALYftJ0gVqJU75SBw/exec" class="service-link service-card group p-6 rounded-3xl flex flex-col items-center text-center">
-            <div class="icon-container w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-inner">
-                <i class="fa-solid fa-house-chimney-user text-xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 font-[Kanit]">ระบบเยี่ยมบ้านนักเรียน</h3>
-            <p class="text-slate-500 text-xs md:text-sm leading-relaxed mb-5">บันทึกข้อมูล พิกัดที่ตั้ง และสรุปผลการเยี่ยมบ้านนักเรียน</p>
-            <span class="mt-auto inline-flex items-center text-blue-600 font-bold text-xs md:text-sm bg-blue-50 px-5 py-2 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all">
-                เข้าใช้งาน <i class="fa-solid fa-arrow-right ml-1.5 transition-transform group-hover:translate-x-1.5"></i>
-            </span>
-        </a>
-
-        <a href="https://pkschool-cloud.github.io/pksaving/index.html" class="service-link service-card group p-6 rounded-3xl flex flex-col items-center text-center">
-            <div class="icon-container w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-inner">
-                <i class="fa-solid fa-piggy-bank text-xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 font-[Kanit]">ระบบออมทรัพย์นักเรียน</h3>
-            <p class="text-slate-500 text-xs md:text-sm leading-relaxed mb-5">จัดการบัญชี ฝาก-ถอน และสรุปยอดเงินออมรายห้องเรียน</p>
-            <span class="mt-auto inline-flex items-center text-blue-600 font-bold text-xs md:text-sm bg-blue-50 px-5 py-2 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all">
-                เข้าใช้งาน <i class="fa-solid fa-arrow-right ml-1.5 transition-transform group-hover:translate-x-1.5"></i>
-            </span>
-        </a>
-
-        <a href="https://pkschool-cloud.github.io/pkdocumentary/dashboard.html" class="service-link service-card group p-6 rounded-3xl flex flex-col items-center text-center">
-            <div class="icon-container w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-inner">
-                <i class="fa-solid fa-file-signature text-xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 font-[Kanit]">สารบรรณอิเล็กทรอนิกส์</h3>
-            <p class="text-slate-500 text-xs md:text-sm leading-relaxed mb-5">ระบบลงรับ-ส่งหนังสือราชการ และค้นหาเอกสารแบบรวดเร็ว</p>
-            <span class="mt-auto inline-flex items-center text-blue-600 font-bold text-xs md:text-sm bg-blue-50 px-5 py-2 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all">
-                เข้าใช้งาน <i class="fa-solid fa-arrow-right ml-1.5 transition-transform group-hover:translate-x-1.5"></i>
-            </span>
-        </a>
-
-        <a href="https://pkschool-cloud.github.io/pkegp/dashboard.html" class="service-link service-card group p-6 rounded-3xl flex flex-col items-center text-center">
-            <div class="icon-container w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-inner">
-                <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 font-[Kanit]">ระบบทะเบียนคุมเลขจัดซื้อจัดจ้าง</h3>
-            <p class="text-slate-500 text-xs md:text-sm leading-relaxed mb-5">อำนวยความสะดวกในการรันเลขที่เอกสารพัสดุและจัดซื้อ</p>
-            <span class="mt-auto inline-flex items-center text-blue-600 font-bold text-xs md:text-sm bg-blue-50 px-5 py-2 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all">
-                เข้าใช้งาน <i class="fa-solid fa-arrow-right ml-1.5 transition-transform group-hover:translate-x-1.5"></i>
-            </span>
-        </a>
-
-        <a href="https://pkschool-cloud.github.io/e-budget/dashboard.html" class="service-link service-card group p-6 rounded-3xl flex flex-col items-center text-center">
-            <div class="icon-container w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-inner">
-                <i class="fa-solid fa-vault text-xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 font-[Kanit]">ระบบจัดการงบประมาณ</h3>
-            <p class="text-slate-500 text-xs md:text-sm leading-relaxed mb-5">ติดตามการใช้จ่ายงบประมาณแต่ละโครงการให้เป็นไปตามแผน</p>
-            <span class="mt-auto inline-flex items-center text-blue-600 font-bold text-xs md:text-sm bg-blue-50 px-5 py-2 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all">
-                เข้าใช้งาน <i class="fa-solid fa-arrow-right ml-1.5 transition-transform group-hover:translate-x-1.5"></i>
-            </span>
-        </a>
-
+    <div class="flex items-center justify-between gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/60 flex-wrap">
+      <span id="dirty-note" class="text-sm text-amber-600 font-medium" style="visibility:hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i>มีการแก้ไขที่ยังไม่บันทึก</span>
+      <div class="flex gap-2 ml-auto">
+        <button type="button" id="admin-cancel" class="btn btn-light">ยกเลิก</button>
+        <button type="button" id="admin-save" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> บันทึก</button>
+      </div>
     </div>
-
-    <div class="text-center mt-10 pb-4 animate-fade-up opacity-50 hover:opacity-100 transition-opacity duration-300" style="animation-delay: 0.4s;">
-        <p class="text-slate-400 text-xs mb-1">ลิขสิทธิ์และพัฒนาโดย Thianrawich P. © Copyright 2026</p>
-        <p class="text-slate-400 text-[10px]">ติดต่อ ครูธนศรัณย์กร เพื่อแจ้งเหตุขัดข้องหรือข้อเสนอแนะ</p>
-    </div>
+  </div>
 </div>
+
+<!-- ================= ฟอร์มเพิ่ม/แก้ไขเมนู ================= -->
+<div id="editor-modal" class="modal-backdrop" style="z-index:1100">
+  <form id="editor-form" class="panel max-w-3xl" novalidate>
+    <div class="flex items-center justify-between px-6 pt-5 pb-3 border-b border-slate-100">
+      <h2 id="ed-heading" class="text-lg font-bold text-slate-800 font-[Kanit]">เพิ่มเมนูใหม่</h2>
+      <button type="button" class="icon-btn" data-close="#editor-modal" aria-label="ปิด"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <div class="panel-body px-6 py-5">
+      <div class="grid md:grid-cols-[1fr_260px] gap-6">
+        <div class="space-y-4">
+          <div><label class="field-label" for="ed-title">ชื่อระบบ <span class="text-red-500">*</span></label><input id="ed-title" class="field-input" placeholder="เช่น ระบบเช็คชื่อนักเรียน"></div>
+          <div><label class="field-label" for="ed-desc">คำอธิบายสั้นๆ</label><textarea id="ed-desc" rows="2" class="field-input" placeholder="อธิบายว่าระบบนี้ใช้ทำอะไร"></textarea></div>
+          <div><label class="field-label" for="ed-url">ลิงก์ (URL) <span class="text-red-500">*</span></label><input id="ed-url" class="field-input" placeholder="https://..."></div>
+          <div class="flex flex-wrap gap-4 items-center">
+            <div class="flex-1 min-w-[180px]">
+              <label class="field-label" for="ed-status">สถานะ</label>
+              <select id="ed-status" class="field-input">
+                <option value="active">แสดงปกติ</option>
+                <option value="disabled">ปิดใช้งานชั่วคราว (เห็นแต่กดไม่ได้)</option>
+                <option value="hidden">ซ่อนจากหน้าเว็บ</option>
+              </select>
+            </div>
+            <label class="flex items-center gap-2 text-sm text-slate-600 mt-6 cursor-pointer"><input type="checkbox" id="ed-newtab" class="w-4 h-4 accent-blue-600"> เปิดในแท็บใหม่</label>
+          </div>
+
+          <div>
+            <span class="field-label">ไอคอน</span>
+            <div class="flex gap-1 mb-3 bg-slate-100 p-1 rounded-xl w-fit">
+              <button type="button" class="tab-btn !py-1.5 !text-sm" data-iconmode="icon"><i class="fa-solid fa-icons mr-1"></i>เลือกไอคอน</button>
+              <button type="button" class="tab-btn !py-1.5 !text-sm" data-iconmode="image"><i class="fa-regular fa-image mr-1"></i>อัปโหลดรูปโลโก้</button>
+            </div>
+            <div id="icon-mode-icon">
+              <input id="icon-search" class="field-input mb-2" placeholder="ค้นหาไอคอน เช่น นักเรียน, เงิน, ข่าว, video">
+              <div id="icon-grid" class="icon-grid border border-slate-100 rounded-xl"></div>
+              <input id="icon-custom" class="field-input mt-2 text-sm" placeholder="หรือพิมพ์ชื่อไอคอน Font Awesome เอง เช่น fa-solid fa-rocket">
+            </div>
+            <div id="icon-mode-image" style="display:none">
+              <label class="upload-box">
+                <input type="file" id="icon-file" accept="image/*" class="hidden">
+                <i class="fa-solid fa-cloud-arrow-up text-2xl mb-1 text-blue-500"></i>
+                <div class="font-semibold text-slate-700">คลิกเพื่ออัปโหลดรูปโลโก้</div>
+                <div class="text-xs">แนะนำรูปสี่เหลี่ยมจัตุรัส PNG พื้นใส</div>
+              </label>
+              <button type="button" id="icon-file-remove" class="btn btn-danger-light w-full mt-2" style="display:none"><i class="fa-regular fa-trash-can"></i> ลบรูปนี้</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <span class="field-label">ตัวอย่างการ์ด</span>
+          <div id="card-preview" class="card-preview-wrap"></div>
+        </div>
+      </div>
+      <p id="ed-error" class="text-red-600 text-sm mt-3"></p>
+    </div>
+    <div class="flex justify-end gap-2 px-6 py-4 border-t border-slate-100 bg-slate-50/60">
+      <button type="button" class="btn btn-light" data-close="#editor-modal">ยกเลิก</button>
+      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> ตกลง</button>
+    </div>
+  </form>
+</div>
+
+<div id="toast-area"></div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const links = document.querySelectorAll('.service-link');
-        const overlay = document.getElementById('loading-overlay');
-        const loadingText = document.getElementById('loading-text');
+/* =====================================================================
+   การเก็บข้อมูล
+   - ถ้า CONFIG_API_URL ว่าง: การตั้งค่าจะเก็บในเบราว์เซอร์ที่แก้ไขเท่านั้น
+   - ถ้าต้องการให้ทุกคนเห็นการเปลี่ยนแปลง: ติดตั้งไฟล์ Code.gs บน Google Apps Script
+     แล้วนำ URL (ลงท้ายด้วย /exec) มาใส่ด้านล่าง
+   ===================================================================== */
+const CONFIG_API_URL = 'https://script.google.com/macros/s/AKfycbzBN3d2K8eD5MlxEsoLScHctcZKK8CX5MypzCdzoC4zPyUX2oNraQ3SCy-jLFktS0QmUw/exec';
 
-        links.forEach(link => {
-            link.addEventListener('click', function(e) {
-                // ป้องกันการข้ามหน้าทันที
-                e.preventDefault();
-                
-                const targetUrl = this.getAttribute('href');
-                const systemName = this.querySelector('h3').innerText;
+const STORAGE_KEY = 'pkschool_portal_config_v1';
+const DEFAULT_PASSWORD = 'admin1234';   // รหัสเริ่มต้น (โหมดเบราว์เซอร์) — เปลี่ยนได้ในหลังบ้าน
+const DEFAULT_LOGO = 'school logo.jpg';
 
-                // อัปเดตข้อความและแสดง Overlay
-                loadingText.innerText = `กำลังโหลดระบบ "${systemName}"`;
-                overlay.style.display = 'flex';
+const ICONS = [
+  ['fa-solid fa-user-check','เช็คชื่อ นักเรียน มาเรียน check'],
+  ['fa-solid fa-house-chimney-user','เยี่ยมบ้าน บ้าน home'],
+  ['fa-solid fa-piggy-bank','ออมทรัพย์ เงิน ออม saving'],
+  ['fa-solid fa-file-signature','สารบรรณ หนังสือราชการ ลงนาม'],
+  ['fa-solid fa-file-invoice-dollar','จัดซื้อ จัดจ้าง พัสดุ'],
+  ['fa-solid fa-vault','งบประมาณ การเงิน budget'],
+  ['fa-solid fa-school','โรงเรียน school'],
+  ['fa-solid fa-graduation-cap','การศึกษา จบ วิชาการ'],
+  ['fa-solid fa-chalkboard-user','ครู สอน ห้องเรียน teacher'],
+  ['fa-solid fa-book','หนังสือ ห้องสมุด book'],
+  ['fa-solid fa-book-open','อ่าน หนังสือ read'],
+  ['fa-solid fa-users','ผู้ใช้ บุคลากร กลุ่ม users'],
+  ['fa-solid fa-people-group','ทีม ชุมชน กลุ่ม'],
+  ['fa-solid fa-user-tie','ผู้บริหาร บุคลากร'],
+  ['fa-solid fa-child','เด็ก นักเรียน อนุบาล'],
+  ['fa-solid fa-id-card','บัตร ประวัติ ทะเบียน'],
+  ['fa-solid fa-calendar-days','ปฏิทิน กิจกรรม calendar'],
+  ['fa-solid fa-clock','เวลา ตาราง time'],
+  ['fa-solid fa-clipboard-list','รายการ แบบฟอร์ม form'],
+  ['fa-solid fa-list-check','ตรวจ เช็ค งาน task'],
+  ['fa-solid fa-pen-to-square','เขียน แก้ไข บันทึก'],
+  ['fa-solid fa-chart-line','สถิติ กราฟ รายงาน chart'],
+  ['fa-solid fa-chart-pie','สรุป แผนภูมิ'],
+  ['fa-solid fa-square-poll-vertical','ผลการเรียน คะแนน โหวต'],
+  ['fa-solid fa-calculator','คำนวณ คณิต บัญชี'],
+  ['fa-solid fa-money-bill-wave','เงิน ค่าใช้จ่าย money'],
+  ['fa-solid fa-receipt','ใบเสร็จ receipt'],
+  ['fa-solid fa-cart-shopping','ซื้อ ร้านค้า สหกรณ์ shop'],
+  ['fa-solid fa-boxes-stacked','พัสดุ ครุภัณฑ์ คลัง'],
+  ['fa-solid fa-folder-open','แฟ้ม ไฟล์ เอกสาร folder'],
+  ['fa-solid fa-file-lines','เอกสาร ไฟล์ file'],
+  ['fa-solid fa-file-pdf','pdf เอกสาร'],
+  ['fa-solid fa-print','พิมพ์ print'],
+  ['fa-solid fa-envelope','อีเมล จดหมาย mail'],
+  ['fa-solid fa-bullhorn','ประชาสัมพันธ์ ประกาศ pr'],
+  ['fa-solid fa-newspaper','ข่าว จดหมายข่าว news'],
+  ['fa-solid fa-bell','แจ้งเตือน bell'],
+  ['fa-solid fa-comments','แชท สนทนา ความคิดเห็น'],
+  ['fa-solid fa-camera','ภาพ ถ่ายรูป camera'],
+  ['fa-solid fa-video','วิดีโอ video'],
+  ['fa-solid fa-photo-film','สื่อ ภาพ วิดีโอ media'],
+  ['fa-solid fa-image','รูปภาพ image'],
+  ['fa-solid fa-palette','ศิลปะ ออกแบบ art'],
+  ['fa-solid fa-music','ดนตรี เพลง music'],
+  ['fa-solid fa-futbol','กีฬา ฟุตบอล sport'],
+  ['fa-solid fa-trophy','รางวัล แข่งขัน trophy'],
+  ['fa-solid fa-award','เกียรติบัตร รางวัล award'],
+  ['fa-solid fa-star','ดาว เด่น star'],
+  ['fa-solid fa-flask','วิทยาศาสตร์ ทดลอง science'],
+  ['fa-solid fa-microscope','วิทยาศาสตร์ วิจัย'],
+  ['fa-solid fa-earth-asia','โลก สังคม world'],
+  ['fa-solid fa-language','ภาษา language'],
+  ['fa-solid fa-laptop','คอมพิวเตอร์ laptop'],
+  ['fa-solid fa-desktop','คอมพิวเตอร์ จอ computer'],
+  ['fa-solid fa-wifi','อินเทอร์เน็ต wifi'],
+  ['fa-solid fa-cloud','คลาวด์ cloud'],
+  ['fa-solid fa-database','ฐานข้อมูล database'],
+  ['fa-solid fa-qrcode','คิวอาร์ qr'],
+  ['fa-solid fa-link','ลิงก์ link'],
+  ['fa-solid fa-heart-pulse','สุขภาพ อนามัย health'],
+  ['fa-solid fa-kit-medical','พยาบาล ปฐมพยาบาล'],
+  ['fa-solid fa-utensils','อาหาร อาหารกลางวัน โภชนาการ'],
+  ['fa-solid fa-bus','รถ รับส่ง bus'],
+  ['fa-solid fa-seedling','เกษตร ปลูก'],
+  ['fa-solid fa-hand-holding-heart','ช่วยเหลือ ดูแล ทุน'],
+  ['fa-solid fa-shield-halved','ความปลอดภัย security'],
+  ['fa-solid fa-building-columns','หน่วยงาน ราชการ'],
+  ['fa-solid fa-map-location-dot','แผนที่ พิกัด map'],
+  ['fa-solid fa-gear','ตั้งค่า setting'],
+  ['fa-solid fa-circle-info','ข้อมูล info'],
+  ['fa-brands fa-line','ไลน์ line'],
+  ['fa-brands fa-facebook','เฟซบุ๊ก facebook'],
+  ['fa-brands fa-youtube','ยูทูบ youtube'],
+  ['fa-brands fa-google-drive','กูเกิลไดรฟ์ drive'],
+];
 
-                // หน่วงเวลา 3 วินาที (3000 มิลลิวินาที) ก่อนข้ามหน้า
-                setTimeout(() => {
-                    window.location.href = targetUrl;
-                }, 3000);
-            });
-        });
-    });
+const DEFAULT_CONFIG = {
+  version: 1,
+  site: {
+    title: 'Pa Kang School Cloud',
+    subtitle: 'ระบบจัดการออนไลน์ โรงเรียนบ้านป่าก้าง',
+    logo: ''
+  },
+  background: { image: '', opacity: 35, blur: 4 },
+  passwordHash: null,
+  items: [
+    { id: 'm1', title: 'ระบบเช็คชื่อนักเรียน', desc: 'บันทึกการมาเรียน สรุปสถิติ และพิมพ์รายงาน PDF อัตโนมัติ', url: 'https://pkschool-cloud.github.io/Check-Student/dashboard.html', iconType: 'icon', icon: 'fa-solid fa-user-check', iconImage: '', status: 'active', newTab: false },
+    { id: 'm2', title: 'ระบบเยี่ยมบ้านนักเรียน', desc: 'บันทึกข้อมูล พิกัดที่ตั้ง และสรุปผลการเยี่ยมบ้านนักเรียน', url: 'https://script.google.com/macros/s/AKfycbw71okBCdEeIUh7y90ZuRWn8Oky-1CeuF9Oz6SGY0u90XeZDC-vzALYftJ0gVqJU75SBw/exec', iconType: 'icon', icon: 'fa-solid fa-house-chimney-user', iconImage: '', status: 'active', newTab: false },
+    { id: 'm3', title: 'ระบบออมทรัพย์นักเรียน', desc: 'จัดการบัญชี ฝาก-ถอน และสรุปยอดเงินออมรายห้องเรียน', url: 'https://pkschool-cloud.github.io/pksaving/index.html', iconType: 'icon', icon: 'fa-solid fa-piggy-bank', iconImage: '', status: 'active', newTab: false },
+    { id: 'm4', title: 'สารบรรณอิเล็กทรอนิกส์', desc: 'ระบบลงรับ-ส่งหนังสือราชการ และค้นหาเอกสารแบบรวดเร็ว', url: 'https://pkschool-cloud.github.io/pkdocumentary/dashboard.html', iconType: 'icon', icon: 'fa-solid fa-file-signature', iconImage: '', status: 'active', newTab: false },
+    { id: 'm5', title: 'ระบบทะเบียนคุมเลขจัดซื้อจัดจ้าง', desc: 'อำนวยความสะดวกในการรันเลขที่เอกสารพัสดุและจัดซื้อ', url: 'https://pkschool-cloud.github.io/pkegp/dashboard.html', iconType: 'icon', icon: 'fa-solid fa-file-invoice-dollar', iconImage: '', status: 'active', newTab: false },
+    { id: 'm6', title: 'ระบบจัดการงบประมาณ', desc: 'ติดตามการใช้จ่ายงบประมาณแต่ละโครงการให้เป็นไปตามแผน', url: 'https://pkschool-cloud.github.io/e-budget/dashboard.html', iconType: 'icon', icon: 'fa-solid fa-vault', iconImage: '', status: 'active', newTab: false }
+  ]
+};
+
+/* ---------------- ตัวแปรสถานะ ---------------- */
+let config, draft = null, dirty = false;
+let isAuthed = false, sessionPassword = '';
+let editingIndex = -1, editorState = null, dragIndex = null;
+
+/* ---------------- ฟังก์ชันช่วย ---------------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clone = o => JSON.parse(JSON.stringify(o));
+const uid = () => 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function safeUrl(u) {
+  u = String(u || '').trim();
+  if (!u) return '#';
+  if (/^\s*(javascript|data|vbscript):/i.test(u)) return '#';
+  return u;
+}
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  const icon = type === 'error' ? 'fa-circle-exclamation' : type === 'success' ? 'fa-circle-check' : 'fa-circle-info';
+  el.innerHTML = `<i class="fa-solid ${icon}"></i><span>${esc(msg)}</span>`;
+  $('#toast-area').appendChild(el);
+  setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3200);
+}
+
+function normalizeItem(it) {
+  return {
+    id: it.id || uid(),
+    title: String(it.title || ''),
+    desc: String(it.desc || ''),
+    url: String(it.url || ''),
+    iconType: it.iconType === 'image' ? 'image' : 'icon',
+    icon: String(it.icon || 'fa-solid fa-link'),
+    iconImage: String(it.iconImage || ''),
+    status: ['active', 'disabled', 'hidden'].includes(it.status) ? it.status : 'active',
+    newTab: !!it.newTab
+  };
+}
+function normalizeConfig(raw) {
+  const d = clone(DEFAULT_CONFIG);
+  if (!raw || typeof raw !== 'object') return d;
+  const bg = { ...d.background, ...(raw.background || {}) };
+  bg.opacity = Math.min(100, Math.max(0, Number(bg.opacity) || 0));
+  bg.blur = Math.min(20, Math.max(0, Number(bg.blur) || 0));
+  return {
+    version: 1,
+    site: { ...d.site, ...(raw.site || {}) },
+    background: bg,
+    passwordHash: raw.passwordHash || null,
+    items: Array.isArray(raw.items) ? raw.items.map(normalizeItem) : d.items
+  };
+}
+function loadLocal() {
+  try { const s = localStorage.getItem(STORAGE_KEY); return s ? normalizeConfig(JSON.parse(s)) : null; }
+  catch (e) { return null; }
+}
+function saveLocal(c) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(c)); return true; }
+  catch (e) { return false; }
+}
+
+async function api(payload) {
+  const res = await fetch(CONFIG_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+async function hashPassword(pw, algo) {
+  const hasSubtle = !!(window.crypto && crypto.subtle);
+  algo = algo || (hasSubtle ? 'sha256' : 'djb2');
+  const s = 'pkschool::' + pw;
+  if (algo === 'sha256') {
+    if (!hasSubtle) return null;
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+    return 'sha256:' + [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return 'djb2:' + (h >>> 0).toString(16);
+}
+
+function resizeImage(file, maxSize, mime = 'image/png', quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type.startsWith('image/')) return reject(new Error('ไฟล์ที่เลือกไม่ใช่รูปภาพ'));
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('เปิดรูปภาพไม่สำเร็จ'));
+      img.onload = () => {
+        let w = img.naturalWidth || maxSize, h = img.naturalHeight || maxSize;
+        const r = Math.min(1, maxSize / Math.max(w, h));
+        w = Math.round(w * r); h = Math.round(h * r);
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        const ctx = cv.getContext('2d');
+        if (mime === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); }
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(cv.toDataURL(mime, quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------------- แสดงผลหน้าบ้าน ---------------- */
+function iconMarkup(item, cls = 'text-2xl') {
+  if (item.iconType === 'image' && item.iconImage) {
+    return `<img src="${esc(item.iconImage)}" alt="" class="w-full h-full object-contain p-1">`;
+  }
+  return `<i class="${esc(item.icon || 'fa-solid fa-link')} ${cls}"></i>`;
+}
+
+function cardHTML(item) {
+  const disabled = item.status === 'disabled';
+  const hasImg = item.iconType === 'image' && item.iconImage;
+  const tag = disabled ? 'div' : 'a';
+  const attrs = disabled
+    ? 'aria-disabled="true" title="ระบบนี้ปิดใช้งานชั่วคราว"'
+    : `href="${esc(safeUrl(item.url))}" data-newtab="${item.newTab ? 1 : 0}"${item.newTab ? ' target="_blank" rel="noopener"' : ''}`;
+  const button = disabled
+    ? `<span class="mt-auto inline-flex items-center text-slate-400 font-bold text-xs md:text-sm bg-slate-100 px-5 py-2 rounded-full"><i class="fa-solid fa-lock mr-1.5"></i> ปิดปรับปรุงชั่วคราว</span>`
+    : `<span class="mt-auto inline-flex items-center text-blue-600 font-bold text-xs md:text-sm bg-blue-50 px-5 py-2 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all">เข้าใช้งาน <i class="fa-solid fa-arrow-right ml-1.5 transition-transform group-hover:translate-x-1.5"></i></span>`;
+  return `<${tag} ${attrs} class="service-link service-card ${disabled ? 'is-disabled' : ''} group p-6 rounded-3xl flex flex-col items-center text-center">
+    ${disabled ? '<span class="disabled-badge"><i class="fa-solid fa-screwdriver-wrench"></i> ปิดใช้งานชั่วคราว</span>' : ''}
+    <div class="card-body flex flex-col items-center w-full">
+      <div class="icon-container ${hasImg ? 'has-image' : ''} w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner">${iconMarkup(item)}</div>
+      <h3 class="text-lg font-bold text-slate-800 mb-2 font-[Kanit]">${esc(item.title)}</h3>
+      <p class="text-slate-500 text-xs md:text-sm leading-relaxed mb-5">${esc(item.desc)}</p>
+    </div>
+    ${button}
+  </${tag}>`;
+}
+
+function applyBackground(el, bg, blurScale = 1) {
+  if (bg && bg.image) {
+    el.style.backgroundImage = `url("${bg.image}")`;
+    el.style.opacity = bg.opacity / 100;
+    const b = bg.blur * blurScale;
+    el.style.filter = b > 0 ? `blur(${b}px)` : 'none';
+    el.style.transform = b > 0 ? 'scale(1.08)' : 'none';
+  } else {
+    el.style.backgroundImage = 'none';
+    el.style.opacity = 0;
+    el.style.filter = 'none';
+    el.style.transform = 'none';
+  }
+}
+
+function renderSite(c = config) {
+  $('#site-title').textContent = c.site.title;
+  $('#site-subtitle').textContent = c.site.subtitle;
+  $('#site-logo').src = c.site.logo || DEFAULT_LOGO;
+  applyBackground($('#bg-layer'), c.background);
+  const visible = c.items.filter(i => i.status !== 'hidden');
+  $('#service-grid').innerHTML = visible.map(cardHTML).join('');
+  $('#empty-state').style.display = visible.length ? 'none' : 'block';
+}
+
+/* คลิกการ์ด → หน้าจอโหลด แล้วไปหน้าระบบ */
+$('#service-grid').addEventListener('click', e => {
+  const link = e.target.closest('a.service-link');
+  if (!link) return;
+  if (link.dataset.newtab === '1') return;
+  const targetUrl = link.getAttribute('href');
+  if (!targetUrl || targetUrl === '#') { e.preventDefault(); return; }
+  e.preventDefault();
+  const systemName = link.querySelector('h3').innerText;
+  $('#loading-text').innerText = `กำลังโหลดระบบ "${systemName}"`;
+  $('#loading-overlay').style.display = 'flex';
+  setTimeout(() => { window.location.href = targetUrl; }, 3000);
+});
+window.addEventListener('pageshow', () => { $('#loading-overlay').style.display = 'none'; });
+
+/* ---------------- Modal ---------------- */
+function openModal(sel) { $(sel).classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeModal(sel) {
+  $(sel).classList.remove('open');
+  if (!$$('.modal-backdrop.open').length) document.body.style.overflow = '';
+}
+$$('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.close)));
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if ($('#editor-modal').classList.contains('open')) closeModal('#editor-modal');
+  else if ($('#admin-modal').classList.contains('open')) requestCloseAdmin();
+  else if ($('#login-modal').classList.contains('open')) closeModal('#login-modal');
+});
+
+/* ---------------- Login ---------------- */
+$('#admin-fab').addEventListener('click', () => {
+  if (isAuthed) return openAdmin();
+  $('#login-password').value = '';
+  $('#login-error').textContent = '';
+  openModal('#login-modal');
+  setTimeout(() => $('#login-password').focus(), 50);
+});
+$('#toggle-pw').addEventListener('click', () => {
+  const inp = $('#login-password');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  $('#toggle-pw i').className = inp.type === 'password' ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash';
+});
+$('#login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const pw = $('#login-password').value;
+  const btn = $('#login-submit');
+  btn.disabled = true;
+  $('#login-error').textContent = '';
+  try {
+    let ok = false;
+    if (CONFIG_API_URL) {
+      const r = await api({ action: 'login', password: pw });
+      ok = !!r.ok;
+      if (!ok) $('#login-error').textContent = r.error || 'รหัสผ่านไม่ถูกต้อง';
+    } else {
+      const stored = config.passwordHash;
+      ok = stored ? (await hashPassword(pw, stored.split(':')[0])) === stored : pw === DEFAULT_PASSWORD;
+      if (!ok) $('#login-error').textContent = 'รหัสผ่านไม่ถูกต้อง';
+    }
+    if (ok) {
+      isAuthed = true; sessionPassword = pw;
+      closeModal('#login-modal');
+      openAdmin();
+      if (!CONFIG_API_URL && !config.passwordHash) toast('แนะนำให้เปลี่ยนรหัสผ่านเริ่มต้นในแท็บ “ตั้งค่าทั่วไป”');
+    }
+  } catch (err) {
+    $('#login-error').textContent = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง';
+  } finally { btn.disabled = false; }
+});
+
+/* ---------------- หลังบ้าน ---------------- */
+function setDirty(v = true) {
+  dirty = v;
+  $('#dirty-note').style.visibility = v ? 'visible' : 'hidden';
+}
+function openAdmin() {
+  draft = clone(config);
+  setDirty(false);
+  $('#mode-badge').innerHTML = CONFIG_API_URL
+    ? '<i class="fa-solid fa-cloud text-green-500 mr-1"></i>บันทึกขึ้น Google — ทุกคนเห็นการเปลี่ยนแปลง'
+    : '<i class="fa-solid fa-laptop text-amber-500 mr-1"></i>บันทึกในเบราว์เซอร์นี้เท่านั้น (ยังไม่ได้เชื่อม Google Apps Script)';
+  switchTab('menu');
+  renderMenuList();
+  fillBgControls();
+  fillGeneral();
+  openModal('#admin-modal');
+}
+function requestCloseAdmin() {
+  if (dirty && !confirm('มีการแก้ไขที่ยังไม่บันทึก ต้องการออกโดยไม่บันทึกหรือไม่?')) return;
+  closeModal('#admin-modal');
+  setDirty(false);
+  renderSite(config);
+}
+$('#admin-close').addEventListener('click', requestCloseAdmin);
+$('#admin-cancel').addEventListener('click', requestCloseAdmin);
+
+function switchTab(name) {
+  $$('.tab-btn[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  $$('[data-panel]').forEach(p => p.style.display = p.dataset.panel === name ? '' : 'none');
+  if (name === 'bg') updateBgPreview();
+}
+$$('.tab-btn[data-tab]').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+/* ----- รายการเมนู ----- */
+function renderMenuList() {
+  const list = $('#menu-list');
+  const items = draft.items;
+  const count = s => items.filter(i => i.status === s).length;
+  $('#menu-summary').innerHTML = `ทั้งหมด <b>${items.length}</b> เมนู · แสดง <b class="text-green-600">${count('active')}</b> · ปิดใช้งาน <b class="text-amber-600">${count('disabled')}</b> · ซ่อน <b class="text-slate-500">${count('hidden')}</b>`;
+  if (!items.length) {
+    list.innerHTML = '<li class="text-center text-slate-400 py-10 border-2 border-dashed border-slate-200 rounded-2xl">ยังไม่มีเมนู กด “เพิ่มเมนู” เพื่อเริ่มต้น</li>';
+    return;
+  }
+  list.innerHTML = items.map((it, i) => `
+    <li class="menu-row status-${it.status}" draggable="true" data-index="${i}">
+      <span class="drag-handle" title="ลากเพื่อย้าย"><i class="fa-solid fa-grip-vertical"></i></span>
+      <span class="text-xs font-bold text-slate-400 w-5 text-center">${i + 1}</span>
+      <div class="row-main flex items-center gap-3 flex-1 min-w-[160px]">
+        <div class="row-icon">${iconMarkup(it, 'text-lg')}</div>
+        <div class="min-w-0">
+          <div class="font-semibold text-slate-800 truncate font-[Kanit]">${esc(it.title) || '<span class="text-slate-400">(ไม่มีชื่อ)</span>'}</div>
+          <div class="text-xs text-slate-400 truncate max-w-[260px] sm:max-w-[340px]">${esc(it.url)}</div>
+        </div>
+      </div>
+      <select class="status-select" data-action="status" aria-label="สถานะ">
+        <option value="active" ${it.status === 'active' ? 'selected' : ''}>🟢 แสดงปกติ</option>
+        <option value="disabled" ${it.status === 'disabled' ? 'selected' : ''}>🟡 ปิดใช้งานชั่วคราว</option>
+        <option value="hidden" ${it.status === 'hidden' ? 'selected' : ''}>⚫ ซ่อนจากหน้าเว็บ</option>
+      </select>
+      <div class="flex items-center">
+        <button type="button" class="icon-btn" data-action="up" title="เลื่อนขึ้น" ${i === 0 ? 'disabled' : ''}><i class="fa-solid fa-arrow-up"></i></button>
+        <button type="button" class="icon-btn" data-action="down" title="เลื่อนลง" ${i === items.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-arrow-down"></i></button>
+        <button type="button" class="icon-btn" data-action="edit" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
+        <button type="button" class="icon-btn danger" data-action="delete" title="ลบ"><i class="fa-regular fa-trash-can"></i></button>
+      </div>
+    </li>`).join('');
+}
+function moveItem(from, to) {
+  if (from === to || to < 0 || to >= draft.items.length) return;
+  const [it] = draft.items.splice(from, 1);
+  draft.items.splice(to, 0, it);
+  setDirty(); renderMenuList();
+}
+const menuList = $('#menu-list');
+menuList.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const i = +btn.closest('.menu-row').dataset.index;
+  switch (btn.dataset.action) {
+    case 'up': moveItem(i, i - 1); break;
+    case 'down': moveItem(i, i + 1); break;
+    case 'edit': openEditor(i); break;
+    case 'delete':
+      if (confirm(`ลบเมนู “${draft.items[i].title}” ใช่หรือไม่?\n(ถ้าแค่อยากนำออกชั่วคราว ให้เลือกสถานะ “ซ่อน” แทน)`)) {
+        draft.items.splice(i, 1); setDirty(); renderMenuList();
+      }
+      break;
+  }
+});
+menuList.addEventListener('change', e => {
+  if (e.target.dataset.action !== 'status') return;
+  const i = +e.target.closest('.menu-row').dataset.index;
+  draft.items[i].status = e.target.value;
+  setDirty(); renderMenuList();
+});
+menuList.addEventListener('dragstart', e => {
+  const li = e.target.closest('.menu-row');
+  if (!li) return;
+  dragIndex = +li.dataset.index;
+  li.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', String(dragIndex));
+});
+menuList.addEventListener('dragend', () => {
+  $$('.menu-row', menuList).forEach(r => r.classList.remove('dragging', 'drag-over'));
+  dragIndex = null;
+});
+menuList.addEventListener('dragover', e => {
+  const li = e.target.closest('.menu-row');
+  if (!li || dragIndex === null) return;
+  e.preventDefault();
+  $$('.drag-over', menuList).forEach(r => r !== li && r.classList.remove('drag-over'));
+  li.classList.add('drag-over');
+});
+menuList.addEventListener('drop', e => {
+  const li = e.target.closest('.menu-row');
+  if (!li || dragIndex === null) return;
+  e.preventDefault();
+  moveItem(dragIndex, +li.dataset.index);
+});
+$('#add-menu').addEventListener('click', () => openEditor(-1));
+
+/* ----- ฟอร์มแก้ไขเมนู ----- */
+function openEditor(index) {
+  editingIndex = index;
+  editorState = index >= 0 ? clone(draft.items[index]) : normalizeItem({ icon: 'fa-solid fa-link' });
+  $('#ed-heading').textContent = index >= 0 ? 'แก้ไขเมนู' : 'เพิ่มเมนูใหม่';
+  $('#ed-title').value = editorState.title;
+  $('#ed-desc').value = editorState.desc;
+  $('#ed-url').value = editorState.url;
+  $('#ed-status').value = editorState.status;
+  $('#ed-newtab').checked = editorState.newTab;
+  $('#icon-search').value = '';
+  $('#icon-custom').value = ICONS.some(x => x[0] === editorState.icon) ? '' : editorState.icon;
+  $('#ed-error').textContent = '';
+  setIconMode(editorState.iconType);
+  renderIconGrid();
+  updateEditorPreview();
+  openModal('#editor-modal');
+  setTimeout(() => $('#ed-title').focus(), 50);
+}
+function setIconMode(mode) {
+  $$('[data-iconmode]').forEach(b => b.classList.toggle('active', b.dataset.iconmode === mode));
+  $('#icon-mode-icon').style.display = mode === 'icon' ? '' : 'none';
+  $('#icon-mode-image').style.display = mode === 'image' ? '' : 'none';
+  $('#icon-file-remove').style.display = editorState.iconImage ? '' : 'none';
+}
+$$('[data-iconmode]').forEach(b => b.addEventListener('click', () => {
+  editorState.iconType = b.dataset.iconmode;
+  setIconMode(editorState.iconType);
+  updateEditorPreview();
+}));
+function renderIconGrid() {
+  const q = $('#icon-search').value.trim().toLowerCase();
+  const list = ICONS.filter(([cls, kw]) => !q || cls.includes(q) || kw.toLowerCase().includes(q));
+  $('#icon-grid').innerHTML = list.length
+    ? list.map(([cls, kw]) => `<button type="button" class="icon-choice ${editorState.iconType === 'icon' && editorState.icon === cls ? 'selected' : ''}" data-icon="${cls}" title="${esc(kw)}"><i class="${cls}"></i></button>`).join('')
+    : '<p class="text-sm text-slate-400 p-3 col-span-full">ไม่พบไอคอน ลองคำอื่น หรือพิมพ์ชื่อไอคอนเองด้านล่าง</p>';
+}
+$('#icon-search').addEventListener('input', renderIconGrid);
+$('#icon-grid').addEventListener('click', e => {
+  const b = e.target.closest('[data-icon]');
+  if (!b) return;
+  editorState.icon = b.dataset.icon;
+  editorState.iconType = 'icon';
+  $('#icon-custom').value = '';
+  renderIconGrid(); updateEditorPreview();
+});
+$('#icon-custom').addEventListener('input', e => {
+  const v = e.target.value.trim().replace(/\s+/g, ' ');
+  if (/^fa-/.test(v)) {
+    editorState.icon = v.includes(' ') ? v : 'fa-solid ' + v;
+    editorState.iconType = 'icon';
+    renderIconGrid(); updateEditorPreview();
+  }
+});
+$('#icon-file').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  try {
+    editorState.iconImage = await resizeImage(file, 256, 'image/png');
+    editorState.iconType = 'image';
+    setIconMode('image'); updateEditorPreview();
+  } catch (err) { toast(err.message, 'error'); }
+});
+$('#icon-file-remove').addEventListener('click', () => {
+  editorState.iconImage = '';
+  setIconMode('image'); updateEditorPreview();
+});
+['ed-title', 'ed-desc', 'ed-url'].forEach(id => $('#' + id).addEventListener('input', updateEditorPreview));
+$('#ed-status').addEventListener('change', updateEditorPreview);
+function readEditorFields() {
+  editorState.title = $('#ed-title').value.trim();
+  editorState.desc = $('#ed-desc').value.trim();
+  editorState.url = $('#ed-url').value.trim();
+  editorState.status = $('#ed-status').value;
+  editorState.newTab = $('#ed-newtab').checked;
+}
+function updateEditorPreview() {
+  readEditorFields();
+  const p = { ...editorState, title: editorState.title || 'ชื่อระบบ', desc: editorState.desc || 'คำอธิบายระบบ' };
+  if (p.status === 'hidden') p.status = 'active';
+  $('#card-preview').innerHTML = cardHTML(p) + (editorState.status === 'hidden'
+    ? '<p class="text-xs text-slate-500 text-center mt-2"><i class="fa-regular fa-eye-slash mr-1"></i>เมนูนี้จะถูกซ่อนจากหน้าเว็บ</p>' : '');
+}
+$('#editor-form').addEventListener('submit', e => {
+  e.preventDefault();
+  readEditorFields();
+  let url = editorState.url;
+  if (!editorState.title) return $('#ed-error').textContent = 'กรุณากรอกชื่อระบบ';
+  if (!url) return $('#ed-error').textContent = 'กรุณากรอกลิงก์ของระบบ';
+  if (/^\s*(javascript|data|vbscript):/i.test(url)) return $('#ed-error').textContent = 'ลิงก์นี้ไม่ได้รับอนุญาต';
+  if (/^www\./i.test(url)) url = 'https://' + url;
+  editorState.url = url;
+  if (editorState.iconType === 'image' && !editorState.iconImage) editorState.iconType = 'icon';
+  if (editingIndex >= 0) draft.items[editingIndex] = clone(editorState);
+  else draft.items.push(clone(editorState));
+  setDirty(); renderMenuList();
+  closeModal('#editor-modal');
+});
+
+/* ----- พื้นหลัง ----- */
+function fillBgControls() {
+  $('#bg-opacity').value = draft.background.opacity;
+  $('#bg-blur').value = draft.background.blur;
+  updateBgPreview();
+}
+function updateBgPreview() {
+  const bg = draft.background;
+  $('#bg-opacity-val').textContent = bg.opacity + '%';
+  $('#bg-blur-val').textContent = bg.blur + 'px';
+  $('#bg-remove').style.display = bg.image ? '' : 'none';
+  const pv = $('#bg-preview');
+  const scale = pv.offsetWidth ? pv.offsetWidth / window.innerWidth : 0.35;
+  applyBackground($('#bg-preview-layer'), bg, scale);
+  $('#bg-preview-logo').src = draft.site.logo || DEFAULT_LOGO;
+  $('#bg-preview-title').textContent = draft.site.title;
+  applyBackground($('#bg-layer'), bg);
+}
+$('#bg-opacity').addEventListener('input', e => { draft.background.opacity = +e.target.value; setDirty(); updateBgPreview(); });
+$('#bg-blur').addEventListener('input', e => { draft.background.blur = +e.target.value; setDirty(); updateBgPreview(); });
+$('#bg-file').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  try {
+    draft.background.image = await resizeImage(file, 1920, 'image/jpeg', 0.8);
+    setDirty(); updateBgPreview();
+    toast('อัปโหลดภาพแล้ว ปรับค่าได้ตามต้องการ แล้วกดบันทึก', 'success');
+  } catch (err) { toast(err.message, 'error'); }
+});
+$('#bg-remove').addEventListener('click', () => { draft.background.image = ''; setDirty(); updateBgPreview(); });
+window.addEventListener('resize', () => { if ($('#admin-modal').classList.contains('open')) updateBgPreview(); });
+
+/* ----- ตั้งค่าทั่วไป ----- */
+function fillGeneral() {
+  $('#set-title').value = draft.site.title;
+  $('#set-subtitle').value = draft.site.subtitle;
+  $('#set-logo-preview').src = draft.site.logo || DEFAULT_LOGO;
+  $('#new-pw').value = ''; $('#new-pw2').value = '';
+}
+$('#set-title').addEventListener('input', e => { draft.site.title = e.target.value; setDirty(); });
+$('#set-subtitle').addEventListener('input', e => { draft.site.subtitle = e.target.value; setDirty(); });
+$('#set-logo-file').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  try {
+    draft.site.logo = await resizeImage(file, 400, 'image/png');
+    $('#set-logo-preview').src = draft.site.logo;
+    setDirty();
+  } catch (err) { toast(err.message, 'error'); }
+});
+$('#set-logo-reset').addEventListener('click', () => {
+  draft.site.logo = '';
+  $('#set-logo-preview').src = DEFAULT_LOGO;
+  setDirty();
+});
+$('#change-pw').addEventListener('click', async () => {
+  const a = $('#new-pw').value, b = $('#new-pw2').value;
+  if (a.length < 4) return toast('รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร', 'error');
+  if (a !== b) return toast('รหัสผ่านยืนยันไม่ตรงกัน', 'error');
+  const btn = $('#change-pw'); btn.disabled = true;
+  try {
+    if (CONFIG_API_URL) {
+      const r = await api({ action: 'changePassword', password: sessionPassword, newPassword: a });
+      if (!r.ok) throw new Error(r.error || 'เปลี่ยนรหัสไม่สำเร็จ');
+    } else {
+      const h = await hashPassword(a);
+      config.passwordHash = h; draft.passwordHash = h;
+      if (!saveLocal(config)) throw new Error('บันทึกไม่สำเร็จ');
+    }
+    sessionPassword = a;
+    $('#new-pw').value = ''; $('#new-pw2').value = '';
+    toast('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว', 'success');
+  } catch (err) { toast(err.message, 'error'); }
+  finally { btn.disabled = false; }
+});
+$('#export-json').addEventListener('click', () => {
+  const data = clone(draft); delete data.passwordHash;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `pkschool-cloud-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+$('#import-json').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data || !Array.isArray(data.items)) throw new Error();
+    const keepPw = draft.passwordHash;
+    draft = normalizeConfig(data); draft.passwordHash = keepPw;
+    setDirty(); renderMenuList(); fillBgControls(); fillGeneral();
+    toast('นำเข้าข้อมูลแล้ว ตรวจสอบแล้วกดบันทึก', 'success');
+  } catch (err) { toast('ไฟล์สำรองไม่ถูกต้อง', 'error'); }
+});
+$('#reset-all').addEventListener('click', () => {
+  if (!confirm('คืนค่าเมนู พื้นหลัง และชื่อเว็บเป็นค่าเริ่มต้นทั้งหมด?\n(ยังไม่มีผลจนกว่าจะกดบันทึก)')) return;
+  const keepPw = draft.passwordHash;
+  draft = clone(DEFAULT_CONFIG); draft.passwordHash = keepPw;
+  setDirty(); renderMenuList(); fillBgControls(); fillGeneral();
+});
+$('#logout').addEventListener('click', () => {
+  if (dirty && !confirm('มีการแก้ไขที่ยังไม่บันทึก ต้องการออกจากระบบหรือไม่?')) return;
+  isAuthed = false; sessionPassword = '';
+  setDirty(false);
+  closeModal('#admin-modal');
+  renderSite(config);
+  toast('ออกจากระบบแล้ว');
+});
+
+/* ----- บันทึก ----- */
+$('#admin-save').addEventListener('click', async () => {
+  const btn = $('#admin-save');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+  const newCfg = clone(draft);
+  try {
+    if (CONFIG_API_URL) {
+      const payload = clone(newCfg); delete payload.passwordHash;
+      const r = await api({ action: 'save', password: sessionPassword, config: payload });
+      if (!r.ok) throw new Error(r.error || 'บันทึกไม่สำเร็จ');
+      saveLocal(newCfg);
+    } else if (!saveLocal(newCfg)) {
+      throw new Error('พื้นที่เก็บข้อมูลในเบราว์เซอร์เต็ม ลองใช้รูปขนาดเล็กลง');
+    }
+    config = newCfg;
+    renderSite();
+    setDirty(false);
+    toast('บันทึกเรียบร้อยแล้ว', 'success');
+  } catch (err) {
+    toast(err.message === 'Failed to fetch' ? 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้' : err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> บันทึก';
+  }
+});
+
+/* ---------------- เริ่มต้น ---------------- */
+config = loadLocal() || clone(DEFAULT_CONFIG);
+renderSite();
+if (CONFIG_API_URL) {
+  fetch(CONFIG_API_URL + '?action=get&t=' + Date.now())
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.ok && data.config && Array.isArray(data.config.items)) {
+        const keepPw = config.passwordHash;
+        config = normalizeConfig(data.config);
+        config.passwordHash = keepPw;
+        saveLocal(config);
+        if (!$('#admin-modal').classList.contains('open')) renderSite();
+      }
+    })
+    .catch(() => { /* ใช้ข้อมูลที่แคชไว้ในเครื่องแทน */ });
+}
 </script>
-
 </body>
 </html>
